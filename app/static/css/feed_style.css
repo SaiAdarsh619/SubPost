@@ -1,0 +1,111 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background-color: #f5f6fa;
+  }
+
+  #title
+  {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+  #post_det {
+    display: block; /* optional, makes margin-top/bottom apply more predictably */
+    margin-top: 1px;
+    margin-bottom: 8px;
+    color: #777; /* optional, to style it a bit */
+    font-size: 0.9em;
+  }
+
+  nav {
+    background-color: #fff;
+    padding: 12px 24px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  nav .nav-left a,
+  nav .nav-right a {
+    text-decoration: none;
+    color: #444;
+    margin: 0 10px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    align-items: center;
+  }
+
+  nav .nav-left a:hover,
+  nav .nav-right a:hover {
+    background-color: #e4e6eb;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0 20px;
+  } 
+
+  .post{
+    border: 1px solid #ddd; 
+    border-radius: 6px;
+     padding: 7px; 
+    margin-bottom: 20px; 
+    background-color: #f9f7f7;
+     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .main_post
+  {
+    padding: 8px; 
+    margin: 3px; 
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .post:hover {
+    background-color: #f3efef; /* or any other hover color you like */
+  }
+  
+  .main_post img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px auto; /* optional, centers image horizontally */
+    border-radius: 4px; /* optional, for a nice rounded look */
+  }
+
+  .post-actions {
+    margin-top: 10px;
+  }
+  
+  .post-actions button {
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-right: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+  }
+  
+  .like-button:hover {
+    background-color: #d0e8ff;
+  }
+  
+  .dislike-button:hover {
+    background-color: #ffe0e0;
+  }
+  
+  .post-actions svg {
+    vertical-align: middle;
+  }
+  
