@@ -1,11 +1,25 @@
 {% extends 'feed_base.html' %}
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/signup_style.css') }}">
+    <script src="{{ url_for('static', filename='js/signup.js') }}"></script>
     <title>Signup</title>
 {% endblock %}
 
 {% block body %}
 
+  <nav>
+    <div class="nav-left">
+      <a href="/feed">Home</a>
+      <!-- Other left-side items can go here -->
+    </div>
+    <div class="nav-right">
+      <!-- Dropdown trigger -->
+      <!-- will be filled by script  -->
+      </div>
+    </div>
+  </nav>
+
+  <div class="signup-container-wrapper">
     <div class="signup-container">
         <h1>Signup</h1>
         {% with msg = get_flashed_messages() %}
@@ -30,5 +44,8 @@
         </form>
         <p>Already a user? <a href="/login">Log in here</a>.</p>
     </div>
+  </div>
+
+  <div id="user-data" data-username="{{ username }}" style="display: none;"></div>
 
 {% endblock %}

@@ -1,3 +1,11 @@
+.signup-container-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
 .signup-container {
     background: #fff;
     padding: 20px;
@@ -67,3 +75,16 @@ nav {
     margin: 30px auto;
     padding: 0 20px;
   }
+
+  .create_post_button
+    {
+      text-transform: uppercase;
+      border-radius: 50px;
+      background-color: #ecf1f6;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }

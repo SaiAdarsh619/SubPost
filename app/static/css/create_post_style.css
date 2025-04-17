@@ -7,6 +7,54 @@
     100% { transform: rotate(360deg); }
   }
   
+      /* Profile icon styling */
+      .profile-icon {
+        background-color: #4a90e2;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+      }
+  
+      /* Username styling */
+      .profile-username {
+        margin-left: 10px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+  
+      /* Dropdown container (initially hidden) */
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 45px;
+        right: 0;
+        background-color: #fff;
+        min-width: 150px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        z-index: 100;
+      }
+  
+      /* Each dropdown item */
+      .dropdown-menu a {
+        display: block;
+        padding: 10px;
+        text-decoration: none;
+        color: #333;
+      }
+  
+      .dropdown-menu a:hover {
+        background-color: #f0f0f0;
+      }
+  
 
   .post-container {
     background-color: #fff;
@@ -139,3 +187,16 @@
   {
     color: rgb(13, 254, 13);
   }
+
+  .create_post_button
+    {
+      text-transform: uppercase;
+      border-radius: 50px;
+      background-color: #ecf1f6;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }

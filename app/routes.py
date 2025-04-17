@@ -82,7 +82,7 @@ def profile():
         if request.method == 'GET':
             user_det = get_db().get_profile(session['user'])
             
-            return render_template('profile.html',  
+            return render_template('profile.html',  username = session['user'],
                                 email=user_det['email'] if 'email' in user_det.keys() and user_det['email'] is not None else 'Not provided', 
                                 address=user_det['address'] if 'address' in user_det.keys() and user_det['address'] is not None else 'Not provided', 
                                 contact_number=user_det['contact_number'] if 'contact_number' in user_det.keys() and user_det['contact_number'] is not None else 'Not provided'
@@ -148,22 +148,22 @@ def create_post():
         if result == -1:
             return jsonify({'error': 'An error occurred while creating the post.'}), 500
         else:
-            flash('Your post has been successfully published!', 'success')
             return jsonify({'success': 'Post created successfully!'}), 200
 
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('create_post.html')
-        
+    return render_template('create_post.html',username = session['user'])
+    
 @app.route('/')
 @app.route('/feed', methods=['GET'])
 def feed():
     if  'user' not in session:
-        return redirect(url_for('login'))
+        return render_template('feed.html', posts=get_db().get_popular_posts(5), username = session.get('user'))
+
     user_id = get_db().get_user_id(session['user'])
     raw_posts = get_db().get_recommendations_from_similar_users(user_id,5)
     posts = []
-
+    
     for row in raw_posts:
         post = dict(row)
         unescaped_body = html.unescape(post['body'])
@@ -190,7 +190,7 @@ def feed():
         post['body'] = str(clean_soup)
         posts.append(post)
 
-    return render_template('feed.html', posts=posts)
+    return render_template('feed.html', posts=posts, username = session.get('user'))
 
 @app.route('/like', methods=['POST'])
 def like_post():
@@ -201,10 +201,11 @@ def like_post():
     post_id = request.json.get('post_id')
     result = get_db().like_post(user_id, post_id)
 
+    print(result)
     if result == -1:
         return jsonify({'error': 'An error occurred while liking the post.'}), 500
     else:
-        return jsonify({'success': 'Post liked successfully!'}), 200
+        return jsonify({'status': 'success', 'state': result})
 
 @app.route('/dislike', methods=['POST'])
 def dislike_post():
@@ -215,10 +216,86 @@ def dislike_post():
     post_id = request.json.get('post_id')
     result = get_db().dislike_post(user_id, post_id)
 
+    print(result)
     if result == -1:
         return jsonify({'error': 'An error occurred while disliking the post.'}), 500
     else:
-        return jsonify({'success': 'Post disliked successfully!'}), 200
+        return jsonify({'status': 'success', 'state': result})
+
+@app.route('/your_post', methods=['GET'])
+def your_post():
+    if  'user' not in session:
+        return redirect(url_for('feed'))
+    user_id = get_db().get_user_id(session['user'])
+    raw_posts = get_db().get_posts_of_user(user_id)
+    posts = []
+    
+    for row in raw_posts:
+        post = dict(row)
+        unescaped_body = html.unescape(post['body'])
+        soup = BeautifulSoup(unescaped_body, 'html.parser')
+        clean_soup = BeautifulSoup('', 'html.parser')
+
+        for elem in soup.descendants:
+            if isinstance(elem, NavigableString):
+                clean_soup.append(elem)
+            elif elem.name == 'img' and elem.has_attr('src'):
+                img = clean_soup.new_tag('img', src=elem['src'])
+                clean_soup.append(img)
+            elif elem.name == 'p':
+                # Create clean <p> and add only its text and <img> children
+                new_p = clean_soup.new_tag('p')
+                for child in elem.descendants:
+                    if isinstance(child, NavigableString):
+                        new_p.append(child)
+                    elif child.name == 'img' and child.has_attr('src'):
+                        img = clean_soup.new_tag('img', src=child['src'])
+                        new_p.append(img)
+                clean_soup.append(new_p)
+
+        post['body'] = str(clean_soup)
+        posts.append(post)
+
+        for post in posts:
+            print(post.keys())
+
+    return render_template('your_post.html', posts=posts, username = session.get('user'))
+
+#geting specific post after like or dislike
+@app.route('/post/<int:post_id>/html')
+def get_post_html(post_id):
+    if  'user' not in session:
+        return redirect(url_for('feed')) 
+    user_id = get_db().get_user_id(session['user']) 
+    raw_post = get_db().get_post_by_id(post_id, user_id)  # You must write this method
+    if not raw_post:
+        return jsonify({"error": "Post not found"}), 404
+    
+    post = dict(raw_post)
+    unescaped_body = html.unescape(post['body'])
+    soup = BeautifulSoup(unescaped_body, 'html.parser')
+    clean_soup = BeautifulSoup('', 'html.parser')
+
+    for elem in soup.descendants:
+        if isinstance(elem, NavigableString):
+            clean_soup.append(elem)
+        elif elem.name == 'img' and elem.has_attr('src'):
+            img = clean_soup.new_tag('img', src=elem['src'])
+            clean_soup.append(img)
+        elif elem.name == 'p':
+            # Create clean <p> and add only its text and <img> children
+            new_p = clean_soup.new_tag('p')
+            for child in elem.descendants:
+                if isinstance(child, NavigableString):
+                    new_p.append(child)
+                elif child.name == 'img' and child.has_attr('src'):
+                    img = clean_soup.new_tag('img', src=child['src'])
+                    new_p.append(img)
+            clean_soup.append(new_p)
+
+    post['body'] = str(clean_soup)
+
+    return render_template("single_post.html", post=post)
 
 @app.route("/logout")
 def logout():

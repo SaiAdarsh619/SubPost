@@ -1,14 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-document.getElementById("edit-profile-btn").addEventListener("click", () => {
-  let inputs = document.querySelectorAll("#profile-form input");
-  inputs.forEach(input => input.removeAttribute("disabled"));
-  
-  document.getElementById("edit-profile-btn").style.display = "none";
-  document.getElementById("save-btn").style.display = "inline-block";
-});
-
-const userData = document.getElementById('user-data');
+    const userData = document.getElementById('user-data');
   const username = userData && Object.keys(userData.dataset).length > 0 ? userData.dataset.username : undefined;
 
   if (username !== "") {
@@ -51,7 +43,6 @@ const userData = document.getElementById('user-data');
         z-index: 100;
       ">
         <a href="/profile" style="display: block; padding: 10px;">Profile</a>
-        <a href="/your_post" style="display: block; padding: 10px;">Your Post</a>
         <a href="/settings" style="display: block; padding: 10px;">Settings</a>
         <a href="/logout" style="display: block; padding: 10px;">Logout</a>
       </div>

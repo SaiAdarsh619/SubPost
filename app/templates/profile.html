@@ -5,6 +5,18 @@
 {% endblock %}
 
 {% block body %}
+
+<nav>
+    <div class="nav-left">
+      <a href="/feed">Home</a>
+      <!-- Other left-side items can go here -->
+    </div>
+    <div class="nav-right">
+      <!-- Dropdown trigger -->
+      <!-- will be filled by script  -->
+      </div>
+    </div>
+  </nav>
     {% with msg = get_flashed_messages() %}
         {% if msg %}
             {% for i in msg %}
@@ -15,7 +27,7 @@
 
     <fieldset class="profile-fieldset">
         <legend>User Profile</legend>
-        <button type="button" id="edit-profile-btn" onclick="enableEditing()">Edit</button>
+        <button type="button" id="edit-profile-btn">Edit</button>
         <form id="profile-form" action="/profile" method="POST">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" placeholder="abc@company.com" value="{{ email }}" disabled>
@@ -29,4 +41,6 @@
             <button type="submit" id="save-btn" style="display: none;">Save</button>
         </form>
     </fieldset>
+    <div id="user-data" data-username="{{ username }}" style="display: none;"></div>
+
 {% endblock %}

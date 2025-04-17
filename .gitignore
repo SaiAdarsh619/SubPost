@@ -1,0 +1,25 @@
+# Ignore virtual environment
+myenv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore environment files
+.env
+
+# Ignore IDE/editor config files
+.vscode/
+*.log
+
+# Ignore all files inside uploads
+app/static/uploads/*
+
+# But keep the folder
+!app/static/uploads/.gitkeep
+
+
+# Ignore actual database file
+*.db
+*.sqlite3

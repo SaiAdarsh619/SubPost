@@ -1,0 +1,29 @@
+<div class="post" id="post-{{ post.id }}" >
+    <div class="main_post">
+        <h2 id="title">{{ post.title }}</h2>
+        <small id="post_det">Posted by {{ post.author }} on {{ post.created_at }}</small>
+        <div>
+        {{post.body | safe}}
+        </div>
+    </div>
+    <div class="post-actions">
+        <!-- like button -->
+        <button class="like-button" data-post-id="{{ post.id }}" onclick="handleReaction('like', '{{ post.id }}')">
+        {% if not post.user_liked %}
+        <img class='like-icon' src="{{ url_for('static', filename='icons/thumbs-up.svg') }}" alt="Like" width="24" height="24" />   
+        {% else %}
+        <img class='like-icon'src="{{ url_for('static', filename='icons/thumbs-up-fill.svg') }}" alt="Like" width="24" height="24" />   
+        {% endif %}
+        <span class="like-count">{{ post.likes }}</span>
+        </button>
+        <!-- dislike button -->
+        <button class="dislike-button" data-post-id="{{ post.id }}" onclick="handleReaction('dislike', '{{ post.id }}')">
+        {% if not post.user_disliked %}
+        <img class='dislike-icon' src="{{ url_for('static', filename='icons/thumbs-down.svg') }}" alt="Like" width="24" height="24" />  
+        {% else %}
+        <img class='dislike-icon' src="{{ url_for('static', filename='icons/thumbs-down-fill.svg') }}" alt="Like" width="24" height="24" />  
+        {% endif %}
+        <span class="dislike-count">{{ post.dislikes }}</span>
+        </button>
+    </div>
+</div>

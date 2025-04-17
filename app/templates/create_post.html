@@ -1,10 +1,24 @@
 {% extends 'feed_base.html' %}
 {% block head %}
-  <title>Create Post</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/create_post_style.css') }}">
+<title>Create Post</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create_post_style.css') }}">
+<script src="{{ url_for('static', filename='js/create_post.js') }}"></script>
   {% endblock %}
 
   {% block body %}
+
+  <nav>
+    <div class="nav-left">
+      <a href="/feed">Home</a>
+      <!-- Other left-side items can go here -->
+    </div>
+    <div class="nav-right">
+      <!-- Dropdown trigger -->
+      <!-- will be filled by script  -->
+      </div>
+    </div>
+  </nav>
+  
   <div class="post-container">
     <h2>Create a Post</h2>
 
@@ -15,5 +29,6 @@
     <div id="post_body" contenteditable="true" placeholder="Start typing your thoughts... or drop/paste images."></div>
     <button id="postBtn" type="button">Post</button><p id="status"></p>
   </div>
-<script src="{{ url_for('static', filename='js/create_post.js') }}"></script>
+<div id="user-data" data-username="{{ username }}" style="display: none;"></div>
+
 {% endblock %}

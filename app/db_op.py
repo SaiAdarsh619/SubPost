@@ -157,9 +157,38 @@ class Database:
         result = self.cursor.fetchone()
         return result if result else None
 
-    def get_posts_by_user(self, user_id):
-        get_posts_query = 'SELECT * FROM post WHERE user_id=? ORDER BY created_at DESC'
-        self.cursor.execute(get_posts_query, (user_id,))
+    #also sends if the user liked it or not
+    def get_post_by_id(self, post_id, user_id):
+            get_post_query = ''' SELECT 
+            p.*,
+            u.username as author_name,
+            MAX(CASE WHEN pr.reaction_type = 'like' THEN 1 ELSE 0 END) as user_liked,
+            MAX(CASE WHEN pr.reaction_type = 'dislike' THEN 1 ELSE 0 END) as user_disliked
+        FROM post p
+        JOIN user u ON p.user_id = u.id
+        LEFT JOIN post_reactions pr ON p.id = pr.post_id AND pr.user_id = ?
+        WHERE p.id = ?
+        GROUP BY p.id'''
+            self.cursor.execute(get_post_query, (user_id, post_id))
+            result = self.cursor.fetchone()
+            return result if result else None
+
+    def get_posts_of_user(self, user_id):
+        # also gives if current user liked or disliked their own post
+        get_posts_query = '''SELECT 
+            p.*,
+            u.username as author_name,
+            COALESCE(MAX(CASE WHEN pr.reaction_type = 'like' THEN 1 ELSE 0 END), 0) as user_liked,
+            COALESCE(MAX(CASE WHEN pr.reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) as user_disliked
+        FROM post p
+        JOIN user u ON p.user_id = u.id
+        LEFT JOIN post_reactions pr 
+            ON pr.post_id = p.id AND pr.user_id = ?
+        WHERE p.user_id = ?
+        GROUP BY p.id
+        ORDER BY p.created_at DESC'''
+
+        self.cursor.execute(get_posts_query, (user_id, user_id))
         results = self.cursor.fetchall()
         return results if results else []
 
@@ -197,6 +226,8 @@ class Database:
                         SET dislikes = dislikes - 1, likes = likes + 1 
                         WHERE id = ?
                     ''', (post_id,))
+                    self.connection.commit()
+                    return (1,-1)
                 elif current_reaction[0] == 'like':
                     # User is unliking (remove the like)
                     self.cursor.execute('''
@@ -206,6 +237,8 @@ class Database:
                     self.cursor.execute('''
                         UPDATE post SET likes = likes - 1 WHERE id = ?
                     ''', (post_id,))
+                    self.connection.commit()
+                    return (-1,0)
             else:
                 # New like
                 self.cursor.execute('''
@@ -215,9 +248,8 @@ class Database:
                 self.cursor.execute('''
                     UPDATE post SET likes = likes + 1 WHERE id = ?
                 ''', (post_id,))
-
-            self.connection.commit()
-            return 1
+                self.connection.commit()
+                return (1,0)
         except Exception as e:
             print(f"Error in like_post: {e}")
             self.connection.rollback()
@@ -248,6 +280,8 @@ class Database:
                         SET likes = likes - 1, dislikes = dislikes + 1 
                         WHERE id = ?
                     ''', (post_id,))
+                    self.connection.commit()
+                    return (-1,1)
                 elif current_reaction[0] == 'dislike':
                     # User is undisliking (remove the dislike)
                     self.cursor.execute('''
@@ -257,6 +291,8 @@ class Database:
                     self.cursor.execute('''
                         UPDATE post SET dislikes = dislikes - 1 WHERE id = ?
                     ''', (post_id,))
+                    self.connection.commit()
+                    return (0,-1)
             else:
                 # New dislike
                 self.cursor.execute('''
@@ -266,9 +302,9 @@ class Database:
                 self.cursor.execute('''
                     UPDATE post SET dislikes = dislikes + 1 WHERE id = ?
                 ''', (post_id,))
+                self.connection.commit()
+                return (0,1)
 
-            self.connection.commit()
-            return 1
         except Exception as e:
             print(f"Error in dislike_post: {e}")
             self.connection.rollback()
@@ -293,32 +329,52 @@ class Database:
 
     #now get the post from similar user
     def get_recommendations_from_similar_users(self, user_id, limit=5):
-        """Get posts liked by similar users"""
+        """Get posts liked by similar users with reaction status"""
         similar_users = self.get_similar_users(user_id)
         if not similar_users:
-            return self.get_popular_posts(limit)
+            return self.get_popular_posts(user_id, limit)  # Pass user_id to get user reaction status
         
         similar_user_ids = [str(user[0]) for user in similar_users]
         
-        self.cursor.execute('''
-            SELECT p.*, COUNT(*) as recommendation_score
+        self.cursor.execute(f'''
+            SELECT 
+                p.*,
+                u.username as author_name,
+                COUNT(*) as recommendation_score,
+                MAX(CASE WHEN user_pr.reaction_type = 'like' THEN 1 ELSE 0 END) as user_liked,
+                MAX(CASE WHEN user_pr.reaction_type = 'dislike' THEN 1 ELSE 0 END) as user_disliked
             FROM post p
+            JOIN user u ON p.user_id = u.id
             JOIN post_reactions pr ON p.id = pr.post_id
-            WHERE pr.user_id IN ({})
+            LEFT JOIN post_reactions user_pr ON p.id = user_pr.post_id AND user_pr.user_id = ?
+            WHERE pr.user_id IN ({','.join(['?']*len(similar_user_ids))})
+            AND pr.reaction_type = 'like'
             AND p.id NOT IN (
                 SELECT post_id FROM post_reactions 
                 WHERE user_id = ? AND reaction_type = 'dislike'
             )
-            AND p.id NOT IN (
-                SELECT post_id FROM post_reactions 
-                WHERE user_id = ? AND reaction_type = 'like'
-            )
             GROUP BY p.id
             ORDER BY recommendation_score DESC, p.likes DESC
             LIMIT ?
-        '''.format(','.join(['?']*len(similar_user_ids))), 
-        similar_user_ids + [user_id, user_id, limit])
+        ''', [user_id] + similar_user_ids + [user_id, limit])
         
         return self.cursor.fetchall()
 
-    
+    def get_popular_posts(self, user_id, limit=5):
+        """Get popular posts with user's reaction status"""
+        self.cursor.execute('''
+            SELECT 
+                p.*,
+                u.username as author_name,
+                (p.likes - p.dislikes) as popularity_score,
+                MAX(CASE WHEN pr.reaction_type = 'like' THEN 1 ELSE 0 END) as user_liked,
+                MAX(CASE WHEN pr.reaction_type = 'dislike' THEN 1 ELSE 0 END) as user_disliked
+            FROM post p
+            JOIN user u ON p.user_id = u.id
+            LEFT JOIN post_reactions pr ON p.id = pr.post_id AND pr.user_id = ?
+            GROUP BY p.id
+            ORDER BY popularity_score DESC, p.created_at DESC
+            LIMIT ?
+        ''', (user_id, limit))
+        
+        return self.cursor.fetchall()
